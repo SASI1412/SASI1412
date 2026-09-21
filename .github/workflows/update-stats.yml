@@ -24,23 +24,44 @@ jobs:
 
       - name: Fetch GitHub stats card
         run: |
-          curl -sfL "https://github-readme-stats.vercel.app/api?username=SASI1412&show_icons=true&hide_rank=true&bg_color=071426&title_color=39D98A&text_color=C9D8E8&icon_color=39D98A&border_color=163A63&border_radius=12" -o assets/github-stats.svg \
-            || echo "::warning::stats card fetch failed, keeping previous version"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          CODE=$(curl -sL --retry 3 --retry-delay 10 --retry-connrefused -A "$UA" \
+            -o assets/github-stats.svg -w "%{http_code}" \
+            "https://github-readme-stats.vercel.app/api?username=SASI1412&show_icons=true&hide_rank=true&bg_color=071426&title_color=39D98A&text_color=C9D8E8&icon_color=39D98A&border_color=163A63&border_radius=12" || echo "000")
+          echo "Stats card HTTP status: $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::stats card fetch failed (HTTP $CODE), keeping previous version"
+            git checkout -- assets/github-stats.svg 2>/dev/null || rm -f assets/github-stats.svg
+          fi
 
       - name: Fetch top languages card
         run: |
-          curl -sfL "https://github-readme-stats.vercel.app/api/top-langs/?username=SASI1412&layout=compact&bg_color=071426&title_color=39D98A&text_color=C9D8E8&border_color=163A63&border_radius=12" -o assets/top-langs.svg \
-            || echo "::warning::top languages card fetch failed, keeping previous version"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          CODE=$(curl -sL --retry 3 --retry-delay 10 --retry-connrefused -A "$UA" \
+            -o assets/top-langs.svg -w "%{http_code}" \
+            "https://github-readme-stats.vercel.app/api/top-langs/?username=SASI1412&layout=compact&bg_color=071426&title_color=39D98A&text_color=C9D8E8&border_color=163A63&border_radius=12" || echo "000")
+          echo "Top languages card HTTP status: $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::top languages card fetch failed (HTTP $CODE), keeping previous version"
+            git checkout -- assets/top-langs.svg 2>/dev/null || rm -f assets/top-langs.svg
+          fi
 
       - name: Fetch trophy case
         run: |
-          curl -sfL "https://github-profile-trophy.vercel.app/?username=SASI1412&theme=tokyonight&margin-w=10&margin-h=10" -o assets/trophies.svg \
-            || echo "::warning::trophy case fetch failed, keeping previous version"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          CODE=$(curl -sL --retry 3 --retry-delay 10 --retry-connrefused -A "$UA" \
+            -o assets/trophies.svg -w "%{http_code}" \
+            "https://github-profile-trophy.vercel.app/?username=SASI1412&theme=tokyonight&margin-w=10&margin-h=10" || echo "000")
+          echo "Trophy case HTTP status: $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::warning::trophy case fetch failed (HTTP $CODE), keeping previous version"
+            git checkout -- assets/trophies.svg 2>/dev/null || rm -f assets/trophies.svg
+          fi
 
       - name: Commit changes if any
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/*.svg
+          git add assets/
           git diff --staged --quiet || git commit -m "chore: refresh GitHub stats cards"
           git push
